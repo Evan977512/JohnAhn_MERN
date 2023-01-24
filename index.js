@@ -1,6 +1,12 @@
 const express = require("express");
+
+const config = require("./config/key");
+
+require("dotenv").config();
+const { PORT, MONGO_URI } = process.env;
+
 const app = express();
-const port = 3000;
+const port = PORT || 4000; // 서버 포트 번호. .env에 PORT 값이 설정되어 있지 않다면 4000 사용
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", true);
 
@@ -18,10 +24,8 @@ app.use(bodyParser.json());
 // 회원가입 유저의 client데이터를 가져오려면 userSchema를 import해야한다
 const { Userwow } = require("./models/user");
 
-MONGO_URL = "mongodb+srv://emdwlekr:rladudcks91@cluster0.wuba1f8.mongodb.net/?retryWrites=true&w=majority";
-
 mongoose
-  .connect(MONGO_URL, {
+  .connect(config.MONGO_URI, {
     /**
      * 이렇게 해야 에러가 발생하지 않는다.....?
      */

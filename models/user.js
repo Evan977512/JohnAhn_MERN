@@ -33,6 +33,6 @@ const userSchema = mongoose.Schema({
 });
 
 // UserData라고 이름을 지어놓으면, 자동으로 UserHello라는 collection을 DB에 생성해서 req.body를 저장한다....
-const Userwow = mongoose.model("UserData", userSchema);
+const Userwow = mongoose.model("UserIphone", userSchema);
 
 module.exports = { Userwow };
