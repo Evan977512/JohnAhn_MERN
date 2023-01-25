@@ -3,7 +3,7 @@ const express = require("express");
 const config = require("./config/key");
 
 require("dotenv").config();
-const { PORT, MONGO_URI } = process.env;
+const { PORT } = process.env;
 
 const app = express();
 const port = PORT || 4000; // 서버 포트 번호. .env에 PORT 값이 설정되어 있지 않다면 4000 사용
@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // 회원가입 유저의 client데이터를 가져오려면 userSchema를 import해야한다
-const { Userwow } = require("./models/user");
+const { Userwow } = require("./models/User");
 
 mongoose
   .connect(config.MONGO_URI, {
@@ -56,13 +56,36 @@ app.post("/register", (req, res) => {
    */
   const user = new Userwow(req.body);
 
+  /**
+   * save를 하기 전에 비밀번호를 암호화 해야한다.
+   */
+
   // 위에서 받은 data를 database에 저장해보자
-  user.save((err, userInfo) => {
+  user.save(function (err, userInfo) {
     if (err) return res.json({ success: false, err });
     return res.status(200).json({ success: true }), console.log(userInfo);
   });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
+// login route만들기
+app.post("/login", (req, res) => {
+  // 1. 요청된 name이나 email을 database에서 찾아야한다
+  Userwow.findOne({ email: req.body.email }, function (err, userInfo) {
+    if (!userInfo) {
+      return res.json({
+        loginSuccess: false,
+        message: "Invalid email or username",
+      });
+    }
+    // 2. 요청한 name이나 email이 있다면 password가 같은지 확인한다.
+    userInfo.comparePassword(req.body.password, (err, isMatch) => {
+      if (!isMatch) return res.json({ loginSuccess: false, message: "Invalid password" });
+      // 3. password까지 맞다면 토큰을 생성하기.
+      userInfo.generateToken((err, userInfo));
+    });
+  });
+});
+
+app.listen(port, function () {
+  console.log(`Example app listening on port ${port}!!! sweeeeet`);
 });
