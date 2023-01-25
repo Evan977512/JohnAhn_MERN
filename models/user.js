@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const bodyParser = require("body-parser");
+// jwt 생성
+const jwt = require("jsonwebtoken");
 
 const userSchema = mongoose.Schema({
   name: {
@@ -69,10 +72,30 @@ userSchema.pre("save", function (next) {
 });
 
 userSchema.methods.comparePassword = function (plainPassword, cb) {
+  const DBPassword = this.password;
   // plainPassword == 로그인 시 입력한 String으로 된 password // cb == database에 저장되어있는 암호화 된 password
-  // plainPassword도 암호화 해서 cb와 같은지 비교해야 한다.
-  bcrypt.compare(plainPassword, this.password, function (err, isMatch2) {
-    if (err) return cb(err), cb(null, isMatch2);
+  // plainPassword도 암호화 해서 cb와 같은지 비교해야 한다. why? 이미 암호화 된건 다시 되돌리기 어렵....
+  bcrypt.compare(plainPassword, DBPassword, function (err, isMatch) {
+    //console.log("plainPassword: " + plainPassword);
+    //console.log("DBPassword: " + DBPassword);
+    if (err) return cb(err);
+    cb(null, isMatch);
+  });
+};
+
+userSchema.methods.generateToken = function (cb) {
+  var user = this; // this는 userSchema
+  /**
+   * jsonwebtoken을 이용해서 토큰 생성하기
+   * user._id + 'secretToken' = token이 된다.
+   * 'secretToken' 으로 userId를 알 수 있다.
+   */
+  var token = jwt.sign(user._id.toHexString(), "secretToken");
+  // this.token에 생성된 토큰 적용시키기
+  user.token = token;
+  user.save(function (err, user) {
+    if (err) return cb(err);
+    cb(null, user);
   });
 };
 
