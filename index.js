@@ -16,10 +16,15 @@ mongoose.set("strictQuery", true);
  */
 const bodyParser = require("body-parser");
 
+// cookie-parse 데려오기
+const cookieParser = require("cookie-parser");
+
 // application/x-www-form-urlencoded이렇게 된 데이터를 분석할수 있게 해주는 코드이다....? 어렵쓰....
 app.use(bodyParser.urlencoded({ extended: true }));
 // application/json 타입으로 되어있는것을 분석해서 가져올수 있게 해준다.
 app.use(bodyParser.json());
+// coockie-parser 사용하기
+app.use(cookieParser());
 
 // 회원가입 유저의 client데이터를 가져오려면 userSchema를 import해야한다
 const { Userwow } = require("./models/User");
@@ -42,7 +47,7 @@ app.get("/", (req, res) => {
 });
 
 // register routes
-app.post("/register", (req, res) => {
+app.post("/api/users/register", (req, res) => {
   /**
    * 회원 가입할때 피요한 정보들을 client에서 가져오면
    * 그것들을 database에 넣어준다.
@@ -68,7 +73,7 @@ app.post("/register", (req, res) => {
 });
 
 // login route만들기
-app.post("/login", (req, res) => {
+app.post("/api/users/login", (req, res) => {
   // 1. 요청된 name이나 email을 database에서 찾아야한다
   Userwow.findOne({ email: req.body.email }, function (err, userInfo) {
     if (!userInfo) {
@@ -78,13 +83,21 @@ app.post("/login", (req, res) => {
       });
     }
     // 2. 요청한 name이나 email이 있다면 password가 같은지 확인한다.
-    userInfo.comparePassword(req.body.password, (err, isMatch) => {
+    userInfo.comparePassword(req.body.password, function (err, isMatch) {
       if (!isMatch) return res.json({ loginSuccess: false, message: "Invalid password" });
       // 3. password까지 맞다면 토큰을 생성하기.
-      userInfo.generateToken((err, userInfo));
+      userInfo.generateToken((err, userInfo) => {
+        if (err) return res.status(400).send(err);
+        // 토큰을 저장한다. 어디에? 쿠키에? 로컬스트리지? 요번엔 쿠키에 하자. 토큰을 저장하는 방법에는 여러가지 방법이 있다???
+        res.cookie("x_auth", userInfo.cookie).status(200).json({ loginSuccess: true, userId: userInfo._id });
+      });
     });
   });
 });
+
+// auth만들기!!!
+// auth 라는 middleware 추가!!
+// 미들웨어...? == endpoint에 request를 받은 다음에 callback 함수 하기 전에 중간에서 뭐를 해주는 놈
 
 app.listen(port, function () {
   console.log(`Example app listening on port ${port}!!! sweeeeet`);
