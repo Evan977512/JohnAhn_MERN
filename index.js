@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // 회원가입 유저의 client데이터를 가져오려면 userSchema를 import해야한다
-const { Userwow } = require("./models/user");
+const { User } = require("./models/user");
 
 const { auth } = require("./middleware/auth");
 
@@ -61,12 +61,11 @@ app.post("/api/users/register", (req, res) => {
    * 같은 정보가 들어있다.
    * body-parser가 있기 때문에 가능한 일
    */
-  const user = new Userwow(req.body);
+  const user = new User(req.body);
 
   /**
    * save를 하기 전에 비밀번호를 암호화 해야한다.
    */
-
   // 위에서 받은 data를 database에 저장해보자
   user.save(function (err, userInfo) {
     if (err) return res.json({ success: false, err });
@@ -77,7 +76,7 @@ app.post("/api/users/register", (req, res) => {
 // login route만들기
 app.post("/api/users/login", (req, res) => {
   // 1. 요청된 name이나 email을 database에서 찾아야한다
-  Userwow.findOne({ email: req.body.email }, function (err, userInfo) {
+  User.findOne({ email: req.body.email }, function (err, userInfo) {
     if (!userInfo) {
       return res.json({
         loginSuccess: false,
@@ -89,9 +88,11 @@ app.post("/api/users/login", (req, res) => {
       if (!isMatch) return res.json({ loginSuccess: false, message: "Invalid password" });
       // 3. password까지 맞다면 토큰을 생성하기.
       userInfo.generateToken((err, userInfo) => {
+        // console.log("userInfo.token: " + userInfo.token);
         if (err) return res.status(400).send(err);
         // 토큰을 저장한다. 어디에? 쿠키에? 로컬스트리지? 요번엔 쿠키에 하자. 토큰을 저장하는 방법에는 여러가지 방법이 있다???
-        res.cookie("x_auth", userInfo.cookie).status(200).json({ loginSuccess: true, userId: userInfo._id });
+        res.cookie("x_auth", userInfo.token, { sameSite: "none" }).status(200).json({ loginSuccess: true, userId: userInfo._id });
+        console.log("내가만든 쿠키" + req.cookies.x_auth);
       });
     });
   });
@@ -111,6 +112,30 @@ app.get("api/users/auth", auth, (req, res) => {
     lastname: req.userInfo.lastname,
     role: req.userInfo.role,
     image: req.userInfo.image,
+  });
+});
+
+// Logout 기능 만들기!!
+// 데이터베이스에서 토큰을 지워준다!!
+
+// app.get("/api/users/logout", auth, (req, res) => {
+//   /**
+//    * findOneandUpdate == 찾아서 바꿔준다는 펑숀
+//    * req.userInfo에는 auth 미들웨어에서 전송된 user Information이 담겨있다.
+//    */
+//   User.findOneAndUpdate({ _id: req.userInfo._id }, { token: "" }, (err, userInfo) => {
+//     if (err) return res.json({ success: false, err });
+//     return res.status(200).send({ success: true });
+//   });
+// });
+
+app.get("/api/users/logout", auth, (req, res) => {
+  console.log("req.user: ", req.user);
+  User.findOneAndUpdate({ _id: req.user._id }, { token: "" }, (err, user) => {
+    if (err) return res.json({ success: false, err });
+    return res.status(200).send({
+      success: true,
+    });
   });
 });
 

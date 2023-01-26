@@ -102,22 +102,38 @@ userSchema.methods.generateToken = function (cb) {
 };
 
 // Auth를 하기위해 token찾기
+// userSchema.statics.findByToken = function (token, cb) {
+//   // console.log("I AM HERE2");
+//   var user = this;
+//   console.log("user: " + user._id);
+
+//   // token을 decode한다
+//   jwt.verify(token, "secretToken"),
+//     function (err, decoded) {
+//       // 유저 아이디를 이용해서 유저를 찾은 후에
+//       // 클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인한다.
+//       user.findOne({ _id: decoded, token: token }, function (err, userInfo) {
+//         if (err) return cb(err);
+//         cb(null, userInfo);
+//       });
+//     };
+// };
+
 userSchema.statics.findByToken = function (token, cb) {
   var user = this;
-
-  // token을 decode한다
-  jwt.verify(token, "secretToken"),
-    function (err, decoded) {
-      // 유저 아이디를 이용해서 유저를 찾은 후에
-      // 클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인한다.
-      user.findOne({ _id: decoded, token: token }, function (err, userInfo) {
-        if (err) return cb(err);
-        cb(null, userInfo);
-      });
-    };
+  // user._id + ''  = token
+  //토큰을 decode 한다.
+  jwt.verify(token, "secretToken", function (err, decoded) {
+    //유저 아이디를 이용해서 유저를 찾은 다음에
+    //클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인
+    user.findOne({ _id: decoded, token: token }, function (err, user) {
+      if (err) return cb(err);
+      cb(null, user);
+    });
+  });
 };
 
 // UserData라고 이름을 지어놓으면, 자동으로 UserHello라는 collection을 DB에 생성해서 req.body를 저장한다....
-const Userwow = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
 
-module.exports = { Userwow };
+module.exports = { User };
