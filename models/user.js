@@ -71,6 +71,7 @@ userSchema.pre("save", function (next) {
   }
 });
 
+// compare passwords
 userSchema.methods.comparePassword = function (plainPassword, cb) {
   const DBPassword = this.password;
   // plainPassword == 로그인 시 입력한 String으로 된 password // cb == database에 저장되어있는 암호화 된 password
@@ -83,6 +84,7 @@ userSchema.methods.comparePassword = function (plainPassword, cb) {
   });
 };
 
+// generateToken
 userSchema.methods.generateToken = function (cb) {
   var user = this; // this는 userSchema
   /**
@@ -97,6 +99,22 @@ userSchema.methods.generateToken = function (cb) {
     if (err) return cb(err);
     cb(null, user);
   });
+};
+
+// Auth를 하기위해 token찾기
+userSchema.statics.findByToken = function (token, cb) {
+  var user = this;
+
+  // token을 decode한다
+  jwt.verify(token, "secretToken"),
+    function (err, decoded) {
+      // 유저 아이디를 이용해서 유저를 찾은 후에
+      // 클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인한다.
+      user.findOne({ _id: decoded, token: token }, function (err, userInfo) {
+        if (err) return cb(err);
+        cb(null, userInfo);
+      });
+    };
 };
 
 // UserData라고 이름을 지어놓으면, 자동으로 UserHello라는 collection을 DB에 생성해서 req.body를 저장한다....

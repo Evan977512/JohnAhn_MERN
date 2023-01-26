@@ -27,7 +27,9 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // 회원가입 유저의 client데이터를 가져오려면 userSchema를 import해야한다
-const { Userwow } = require("./models/User");
+const { Userwow } = require("./models/user");
+
+const { auth } = require("./middleware/auth");
 
 mongoose
   .connect(config.MONGO_URI, {
@@ -98,6 +100,19 @@ app.post("/api/users/login", (req, res) => {
 // auth만들기!!!
 // auth 라는 middleware 추가!!
 // 미들웨어...? == endpoint에 request를 받은 다음에 callback 함수 하기 전에 중간에서 뭐를 해주는 놈
+app.get("api/users/auth", auth, (req, res) => {
+  // 여기까지 미들웨어를 통과했다는 뜻은 authentication이 true라는 뜻!!
+  res.status(200).json({
+    _id: req.userInfo._id,
+    isAdmin: req.userInfo.role === 0 ? false : true,
+    isAuth: true,
+    email: req.userInfo.email,
+    name: req.userInfo.name,
+    lastname: req.userInfo.lastname,
+    role: req.userInfo.role,
+    image: req.userInfo.image,
+  });
+});
 
 app.listen(port, function () {
   console.log(`Example app listening on port ${port}!!! sweeeeet`);
