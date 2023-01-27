@@ -48,6 +48,11 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+// client에서 axios 요청을 보낸것 example.
+app.get("/api/hello", (req, res) => {
+  res.send("Hello axios example!!");
+});
+
 // register routes
 app.post("/api/users/register", (req, res) => {
   /**
