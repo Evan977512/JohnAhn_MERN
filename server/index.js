@@ -1,12 +1,12 @@
 const express = require("express");
-
 const config = require("./config/key");
 
 require("dotenv").config();
-const { PORT } = process.env;
+const PORT = process.env.PORT;
 
 const app = express();
-const port = PORT || 4000; // 서버 포트 번호. .env에 PORT 값이 설정되어 있지 않다면 4000 사용
+const port = PORT || 8080; // 서버 포트 번호. .env에 PORT 값이 설정되어 있지 않다면 4000 사용
+console.log("PORT: ", PORT);
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", true);
 
@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
 
 // client에서 axios 요청을 보낸것 example.
 app.get("/api/hello", (req, res) => {
-  res.send("Hello axios example!!");
+  res.send("Hello axios example???");
 });
 
 // register routes

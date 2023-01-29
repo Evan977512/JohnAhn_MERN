@@ -7,7 +7,9 @@ function LandingPage() {
   // response는 서버에서 돌아온 데이터이다.
   // client와 server의 포트가 같아야 하기 때문에 임시로 http://localhost:3000/api/hello 로 보내본다.
   useEffect(() => {
-    axios.get("/api/hello").then((response) => console.log(response.data));
+    axios.get("/api/hello").then((response) => {
+      console.log(response);
+    });
   }, []);
 
   return <div>LandingPage</div>;
