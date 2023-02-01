@@ -2,12 +2,14 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import LandingPage from "./components/views/LandingPage/LandingPage";
 import LoginPage from "./components/views/LoginPage/LoginPage";
 import RegisterPage from "./components/views/RegisterPage/RegisterPage";
+import { DatePicker } from "antd";
 
 import "./App.css";
 
 function App() {
   return (
     <Router>
+      <DatePicker />
       <div>
         <hr />
 
