@@ -8,14 +8,14 @@ import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
 import promiseMiddleWare from "redux-promise";
 import ReduxThunk from "redux-thunk";
-import Reducer from "./_recuers/index.js";
+import Reducer from "./_reducers/index";
 
 const createStoreWithMiddlesare = applyMiddleware(promiseMiddleWare, ReduxThunk)(createStore);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <Provider store={Reducer}>
+    <Provider store={createStoreWithMiddlesare(Reducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())}>
       <App />
     </Provider>
   </React.StrictMode>

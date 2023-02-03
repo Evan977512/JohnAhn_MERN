@@ -12,7 +12,16 @@ function LandingPage() {
     });
   }, []);
 
-  return <div>LandingPage</div>;
+  const loginButton = () => {
+    window.location.replace("/login");
+  };
+
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100vh" }}>
+      <h2>Start!!!</h2>
+      <button onClick={loginButton}>Login</button>
+    </div>
+  );
 }
 
 export default LandingPage;
